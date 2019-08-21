@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "NGT.h"
+#include "LSH.h"
 
 namespace yj {
 namespace xmlc {
@@ -39,6 +40,10 @@ class LLEmbedding {
                size_t cluster, size_t nearestK, float eps,
                std::vector<std::pair<size_t, float> > *result) const;
     int InitSearchIndex();
+    /* Start KLSH */
+    int InitSearchIndexLSH(size_t K, double W, size_t L, size_t D);
+    int BuildSearchIndexLSH(size_t cluster, const std::vector<std::vector<std::vector<double> > > &hashFunction);
+    /* End KLSH */
     int BuildSearchIndex(size_t cluster, size_t max_in_leaf, size_t num_edge, int seed);
     int WriteToStream(FILE *stream) const;
     int ReadFromStream(FILE *stream);
@@ -57,6 +62,7 @@ class LLEmbedding {
     float *embeddings_;
     std::vector<std::vector<size_t> > cluster_assign_;
     std::vector<NGT> search_index_vec_;
+    std::vector<LSH> search_index_vec_LSH_;
 };
 
 

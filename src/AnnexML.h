@@ -51,6 +51,8 @@ class AnnexML {
     std::vector<DataPartitioner> partitioning_vec_;
     std::vector<LLEmbedding> embedding_vec_;
     std::vector<std::vector<int> > labels_;
+    // KLSH
+    std::vector<std::vector<std::vector<double> > > hashFunction_;
 };
 
 } // namespace xmlc

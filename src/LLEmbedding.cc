@@ -440,11 +440,32 @@ int LLEmbedding::InitSearchIndex() {
   return 1;
 }
 
+
+int LLEmbedding::InitSearchIndexLSH(size_t K, double W, size_t L, size_t D) {
+  search_index_vec_LSH_.clear();
+  search_index_vec_LSH_.resize(cluster_assign_.size());
+  for (size_t cluster = 0; cluster < cluster_assign_.size(); cluster++){
+    search_index_vec_LSH_[cluster].SetParams(K, W, L, D);    
+  }
+  return 1;
+}
+
+
 int LLEmbedding::BuildSearchIndex(size_t cluster, size_t max_in_leaf, size_t num_edge, int seed) {
   if (num_data_ == 0 || cluster_assign_.size() == 0) { return 0; }
 
   size_t aligned_embed_size = calc_aligned_float_size(embed_size_);
   search_index_vec_[cluster].BuildIndex(embeddings_, aligned_embed_size, cluster_assign_[cluster], max_in_leaf, num_edge, seed);
+
+  return 1;
+}
+
+
+int LLEmbedding::BuildSearchIndexLSH(size_t cluster, const std::vector<std::vector<std::vector<double> > > &hashFunction) {
+  if (num_data_ == 0 || cluster_assign_.size() == 0) { return 0; }
+
+  size_t aligned_embed_size = calc_aligned_float_size(embed_size_);
+  search_index_vec_LSH_[cluster].BuildHashTable(embeddings_, aligned_embed_size, cluster_assign_[cluster], hashFunction);
 
   return 1;
 }
@@ -687,8 +708,8 @@ size_t LLEmbedding::GetEmbeddingSize() const {
 
 size_t LLEmbedding::GetSearchIndexSize() const {
   size_t index_size = 0;
-  for (size_t i = 0; i < search_index_vec_.size(); ++i) {
-    index_size += search_index_vec_[i].Size();
+  for (size_t i = 0; i < search_index_vec_LSH_.size(); ++i) {
+    index_size += search_index_vec_LSH_[i].Size();
   }
   return index_size;
 }
