@@ -35,9 +35,8 @@ class LSH {
                     size_t vec_size,
                     const std::vector<size_t> &indices,
                     const std::vector<std::vector<std::vector<double> > > &hashFunction);
-    // int Search(const float *data_vec, const float *query,
-    //            size_t K, float eta,
-    //            std::vector<std::pair<size_t, float> > *result) const;
+    int Search(const float *data_vec, const float *query,
+               std::vector<std::pair<size_t, float> > *result) const;
     void Clear();
     size_t Size() const;
 
@@ -84,6 +83,7 @@ class LSH {
     // std::vector<std::vector<size_t> > nn_vec_;
     // std::vector<Node> node_vec_;
     std::unordered_map<size_t, std::vector<size_t>> hashTable_;
+    std::vector<std::vector<std::vector<double> > > hashFunction_;
     size_t K_;
     double W_;
     size_t L_;

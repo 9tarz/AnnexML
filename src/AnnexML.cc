@@ -102,17 +102,29 @@ int AnnexML::Init(const AnnexMLParameter &param, bool load_model) {
       size_t num_thread = (param_.num_thread() > 0) ? param_.num_thread() : 1;
       omp_set_num_threads(num_thread);
 
-      // std::mt19937 rnd_gen(param_.seed());
-      // std::uniform_int_distribution<int> idist(0, INT_MAX);
+      std::mt19937 rnd_gen(param_.seed());
+      std::uniform_int_distribution<int> idist(0, INT_MAX);
 
       std::vector<std::pair<size_t, size_t> > task_vec;
       std::vector<int> seed_vec;
 
       /* Start Generate hash function */
-      size_t K = 10;
-      double W = 0.1;
+      size_t K = 7;
+      double W = 0.2;
       size_t L = 100;
       size_t D = param_.emb_size();
+
+
+      for (size_t i = 0; i < embedding_vec_.size(); ++i) {
+        // embedding_vec_[i].InitSearchIndex();
+        embedding_vec_[i].InitSearchIndexLSH(K, W, L, D);
+        size_t num_cluster = embedding_vec_[i].num_cluster();
+        for (size_t cluster = 0; cluster < num_cluster; ++cluster) {
+          // int seed = idist(rnd_gen);
+          task_vec.push_back(std::make_pair(i, cluster));
+          // seed_vec.push_back(seed);
+        }
+      }
 
       std::mt19937 gen(param_.seed());
 
@@ -132,17 +144,6 @@ int AnnexML::Init(const AnnexMLParameter &param, bool load_model) {
         hashFunction_.push_back(vK);
       }
       /* End Generate hash function */
-
-      for (size_t i = 0; i < embedding_vec_.size(); ++i) {
-        // embedding_vec_[i].InitSearchIndex();
-        embedding_vec_[i].InitSearchIndexLSH(K, W, L, D);
-        size_t num_cluster = embedding_vec_[i].num_cluster();
-        for (size_t cluster = 0; cluster < num_cluster; ++cluster) {
-          // int seed = idist(rnd_gen);
-          task_vec.push_back(std::make_pair(i, cluster));
-          // seed_vec.push_back(seed);
-        }
-      }
 
       fprintf(stderr, "num_edge: %d, search_eps: %f\n", param_.num_edge(), param_.search_eps());
       fprintf(stderr, "Build SearchIndex...");

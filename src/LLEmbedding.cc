@@ -399,12 +399,20 @@ int LLEmbedding::Search(
 
   sparse_dot(datum, w_mat_vec_[cluster], aligned_embed_size, z);
 
-  if (search_index_vec_.size() > cluster) {
+  // if (search_index_vec_.size() > cluster) {
+  //   float norm = calc_l2norm(z, aligned_embed_size);
+  //   if (norm != 0.0f) { for (size_t i = 0; i < embed_size_; ++i) { z[i] /= norm; } }
+  //   search_index_vec_[cluster].Search(embeddings_, z, num_nn, eps, result);
+  //   return 2;
+  // }
+
+  if (search_index_vec_LSH_.size() > cluster) {
     float norm = calc_l2norm(z, aligned_embed_size);
     if (norm != 0.0f) { for (size_t i = 0; i < embed_size_; ++i) { z[i] /= norm; } }
-    search_index_vec_[cluster].Search(embeddings_, z, num_nn, eps, result);
+    search_index_vec_LSH_[cluster].Search(embeddings_, z, result);
     return 2;
   }
+
 
   auto &heap = *result;
   const auto &index = cluster_assign_[cluster];

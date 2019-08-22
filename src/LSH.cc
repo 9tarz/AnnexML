@@ -22,6 +22,7 @@
 #include <vector>
 #include <random>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Utils.h"
 #include "vectorize.h"
@@ -61,6 +62,7 @@ void LSH::BuildHashTable(const float *data_vec,
                      const std::vector<std::vector<std::vector<double> > > &hashFunction) {
 
   Clear();
+  hashFunction_ = hashFunction;
   vec_size_ = vec_size;
   indices_.assign(indices.begin(), indices.end());
 
@@ -72,7 +74,7 @@ void LSH::BuildHashTable(const float *data_vec,
       for (size_t k = 0; k < K_; ++k) {
         double dTemp = 0;
         for (size_t d = 0; d < D_; ++d) {
-          dTemp += v[d]*hashFunction[l][k][d];
+          dTemp += v[d]*hashFunction_[l][k][d];
         }
         double hashvalue = floor(dTemp/W_);
         hashFinalValue ^= std::hash<double>{}(hashvalue) + 0x9e3779b9 + (hashFinalValue << 6) + (hashFinalValue >> 2);
@@ -94,6 +96,7 @@ void LSH::BuildHashTable(const float *data_vec,
 
 void LSH::Clear() {
   indices_.clear();
+  hashFunction_.clear();
   // nn_vec_.clear();
   // node_vec_.clear(); 
 }
@@ -113,6 +116,42 @@ size_t LSH::Size() const {
   return index_size;
 }
 
+
+int LSH::Search(const float *data_vec, const float *query,
+                std::vector<std::pair<size_t, float> > *result) const {
+
+  result->clear();
+
+  for (size_t l = 0; l < L_; ++l){
+    size_t hashFinalValue = 0;
+    for (size_t k = 0; k < K_; ++k) {
+      double dTemp = 0;
+      for (size_t d = 0; d < D_; ++d) {
+        dTemp += query[d]*hashFunction_[l][k][d];
+      }
+      double hashvalue = floor(dTemp/W_);
+      hashFinalValue ^= std::hash<double>{}(hashvalue) + 0x9e3779b9 + (hashFinalValue << 6) + (hashFinalValue >> 2);
+    }
+    size_t hashKey = hashFinalValue ^ std::hash<int>{}(l) + 0x9e3779b9 + (hashFinalValue << 6) + (hashFinalValue >> 2);
+    auto searchKey = hashTable_.find(hashKey);
+    if (searchKey != hashTable_.end()) {
+      for (size_t i = 0 ; i < hashTable_.at(hashKey).size(); i++){
+        size_t idx = hashTable_.at(hashKey)[i];
+        // idxResult.insert(Key);
+        result->push_back(std::make_pair(idx, 1));   
+      }
+    }
+  }
+
+  // convert Euclidean distance to cosine
+  // for (size_t i = 0; i < result->size(); ++i) {
+  //   size_t orig_idx = indices_[(*result)[i].first];
+  //   (*result)[i].first = orig_idx;
+  //   (*result)[i].second = 1.0f - 0.5 * (*result)[i].second;
+  // }
+
+  return 1;
+}
 
 // void NGT::BuildIndex(const float *data_vec,
 //                      size_t vec_size,
